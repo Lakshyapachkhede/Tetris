@@ -5,7 +5,6 @@
 
 int main()
 {
-
     InitWindow(WIDTH, HEIGHT, GAME_NAME);
     SetTargetFPS(FPS);
 

@@ -1,5 +1,5 @@
 #include "queue.h"
-
+#include <stdio.h>
 
 void initQueue(PieceQueue *q, PieceBag *bag)
 {

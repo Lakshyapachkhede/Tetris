@@ -30,6 +30,8 @@ typedef struct
 
     GameState state;
 
+    int isFullScreen;
+
 }Game;
 void initGame(Game *game);
 void gameLoop(Game *game);
@@ -40,5 +42,7 @@ void drawHUDLeft(Game *game);
 void drawHUDRight(Game *game);
 int getScore(Game *game, int lines_cleared);
 void drawGameOver(Game *game);
+void showControls(Game *game);
+void handleInputGame(Game *game);
 
 #endif // GAME_H

@@ -3,6 +3,12 @@
 #include <stdio.h>
 
 
+void changeState(Game *game, GameState new)
+{
+    printf("state changed to %d\n", new);
+    game->state = new;
+}
+
 
 void initGame(Game *game)
 {
@@ -20,29 +26,35 @@ void initGame(Game *game)
     game->level = 0;
     game->lines_cleared = 0;
 
-    game->state = GAME_RUN;
+    changeState(game, GAME_RUN);
 
+    game->isFullScreen = 0;
 
 }
 
 void gameLoop(Game *game)
 {
-    game->state = GAME_RUN;
+
     while (!WindowShouldClose())
     {
 
         handleInput(game);
 
-        if(blockTimer(game))
-        {
-            moveBlockDown(game);
-        }
-
         BeginDrawing();
-
+        
+        
         if(game->state == GAME_RUN)
         {
             ClearBackground(BG_COLOR);
+
+
+            handleInputGame(game);
+
+            if(blockTimer(game))
+            {
+                moveBlockDown(game);
+            }
+
 
             drawBlockOnGrid(&game->block);
 
@@ -54,19 +66,29 @@ void gameLoop(Game *game)
 
             drawHUDRight(game);
 
-
-
         }
+
         else if(game->state == GAME_OVER)
         {
+            ClearBackground(BG_COLOR);
+
+            drawBlockOnGrid(&game->block);
+
+            drawGrid(&game->grid);
+
+            drawHUDLeft(game);
+
+            drawHUDRight(game);
+            
             drawGameOver(game);
         }
 
+        else if(game->state == CONTROLS)
+        {
+            showControls(game);
+        }
 
-        
-        
- 
-            
+
 
         EndDrawing();
     }
@@ -92,6 +114,35 @@ void drawGameOver(Game *game)
         RED
     );
 
+}
+
+void showControls(Game *game)
+{
+    char * controls_text = "Controls\n"
+    "rotate      -> up\n"
+    "move        -> arrow keys\n"
+    "drop        -> left ctrl \n"
+    "full screen -> F11\n"
+    "restart     -> R"
+    ;
+    
+
+    Vector2 text_size = MeasureTextEx(
+        game->font,
+        controls_text,
+        25,
+        HUD_FONT_SPACE
+    );
+
+    DrawTextEx(
+        game->font,
+        controls_text,
+        (Vector2){(WIDTH -  text_size.x)/2, (HEIGHT - text_size.y) / 2},
+        25,      
+        HUD_FONT_SPACE,       
+        HUD_FONT_COLOR
+    );
+    
 }
 
 
@@ -200,7 +251,6 @@ void drawHUDRight(Game *game)
         HUD_FONT_COLOR
     );
     
-    
 }
 
 int getScore(Game *game, int lines_cleared)
@@ -221,12 +271,19 @@ int getScore(Game *game, int lines_cleared)
 }
 
 int moveBlockDown(Game *game)
-{
+{   
+    if (game->state != GAME_RUN)
+    {
+        return 0;
+    }
+    
+
     Block temp = game->block;
     temp.y += 1;
     if (isValidPosition(&temp, &game->grid))
     {
         game->block.y += 1;
+    
         return 1;
     }
     else
@@ -242,7 +299,9 @@ int moveBlockDown(Game *game)
         resetBlock(&game->block, &game->queue, &game->pb);
 
         if(!isValidPosition(&game->block, &game->grid))
-            game->state = GAME_OVER;
+        {   
+            changeState(game, GAME_OVER);
+        }
 
         return 0;
     }
@@ -267,8 +326,9 @@ int blockTimer(Game *game)
 }
 
 
-void handleInput(Game *game)
+void handleInputGame(Game *game)
 {
+
     if (IsKeyPressed(KEY_RIGHT))
     {
         Block temp = game->block;
@@ -330,6 +390,55 @@ void handleInput(Game *game)
             changeBlockRotation(&game->block, oldRot);
         }
     }
+
+
+
+}
+
+
+void handleInput(Game *game)
+{
+
+    if (IsKeyPressed(KEY_R))
+    {
+        initGame(game);
+
+    }
+
+
+    if (IsKeyPressed(KEY_C))
+    {   
+        if(game->state == CONTROLS)
+            changeState(game, GAME_RUN);
+        else       
+            changeState(game, CONTROLS);
+    }
+
+    if (IsKeyPressed(KEY_F11))
+    {   
+        game->isFullScreen = !game->isFullScreen;
+
+        if (game->isFullScreen)
+        {
+            int monitor = GetCurrentMonitor();
+            WIDTH = GetMonitorWidth(monitor);
+            HEIGHT = GetMonitorHeight(monitor);
+            SetWindowSize(WIDTH, HEIGHT);
+            ToggleFullscreen();
+        }
+        else 
+        {
+            WIDTH = INIT_WIDTH;
+            HEIGHT = INIT_HEIGHT;
+            ToggleFullscreen();
+            SetWindowSize(WIDTH, HEIGHT);
+
+        }
+
+    }
+
+    
+
 }
 
 

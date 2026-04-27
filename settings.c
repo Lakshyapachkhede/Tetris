@@ -1,5 +1,9 @@
 #include "settings.h"
 
+
+int WIDTH = 800;
+int HEIGHT = 600;
+
 Color g_colors[NUM_BLOCKS] = {
     [I_BLOCK] = (Color){0, 255, 255, 255},
     [O_BLOCK] = (Color){255, 255, 0, 255},

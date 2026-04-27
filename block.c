@@ -1,5 +1,6 @@
 #include "block.h"
 #include "grid.h"
+#include <stdio.h>
 
 void resetBlock(Block *block, PieceQueue *queue, PieceBag *pb)
 {
@@ -8,6 +9,7 @@ void resetBlock(Block *block, PieceQueue *queue, PieceBag *pb)
     block->mat = TETROMINOES[block->type][block->rotation];
     block->y = 0;
     block->x = (COLS - BLOCK_MATRIX_SIZE) / 2;
+ 
 }
 
 void changeBlockRotation(Block *block, RotationId r)

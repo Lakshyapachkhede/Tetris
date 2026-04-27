@@ -6,8 +6,12 @@
 
 #define GAME_NAME "Tetris - Lakshya Pachkhede 23/4/26"
 
-#define WIDTH 1280
-#define HEIGHT 720
+#define INIT_WIDTH 800
+#define INIT_HEIGHT 600
+
+extern int WIDTH;
+extern int HEIGHT;
+
 
 #define FPS 60
 #define ROWS 20
@@ -73,9 +77,10 @@ extern int kicks[6][2];
 #define GAME_OVER_FONT_SIZE 40
 
 
-typedef enum GameState {GAME_RUN, GAME_OVER} GameState;
+typedef enum GameState {GAME_RUN, GAME_OVER, CONTROLS, HIGHSCORE} GameState;
 
 
-
+#define MAX_SCORES 10
+#define SCORES_FILE "scores.txt"
 
 #endif // SETTINGS_H
