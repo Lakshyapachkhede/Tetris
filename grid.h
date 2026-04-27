@@ -10,7 +10,7 @@ typedef struct GameGrid
 // forward declaration
 typedef struct Block Block;
 
-void removeFilledRows(GameGrid *grid);
+int removeFilledRows(GameGrid *grid);
 void resetGrid(GameGrid *grid);
 void drawGrid(GameGrid *grid);
 int getGridScreenY(int i);

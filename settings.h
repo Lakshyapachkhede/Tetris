@@ -6,8 +6,8 @@
 
 #define GAME_NAME "Tetris - Lakshya Pachkhede 23/4/26"
 
-#define WIDTH 800
-#define HEIGHT 600
+#define WIDTH 1280
+#define HEIGHT 720
 
 #define FPS 60
 #define ROWS 20
@@ -60,6 +60,22 @@ extern int kicks[6][2];
 
 #define BASE_DELAY 0.5f
 #define SPEED_UP 0.001f
+
+
+#define NEXT_BLOCKS_TO_SHOW 3
+
+
+
+#define HUD_FONT_COLOR WHITE
+#define HUD_FONT_SIZE 16
+#define HUD_FONT_SPACE 1
+#define HUD_TEXT_PAD_Y 40
+#define GAME_OVER_FONT_SIZE 40
+
+
+typedef enum GameState {GAME_RUN, GAME_OVER} GameState;
+
+
 
 
 #endif // SETTINGS_H

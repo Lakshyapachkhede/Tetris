@@ -17,13 +17,13 @@ void drawGrid(GameGrid *grid)
     {
         for (int j = 0; j < COLS; j++)
         {
+            Rectangle rect = {getGridScreenX(j), getGridScreenY(i), CELL_SIZE, CELL_SIZE};
 
             if (grid->cells[i][j] != EMPTY)
             {
-                DrawRectangle(getGridScreenX(j), getGridScreenY(i), CELL_SIZE, CELL_SIZE, g_colors[grid->cells[i][j]]);
+                DrawRectangleRec(rect, g_colors[grid->cells[i][j]]);
             }
-
-            Rectangle rect = {getGridScreenX(j), getGridScreenY(i), CELL_SIZE, CELL_SIZE};
+            
             DrawRectangleLinesEx(rect, 1, GRID_COLOR);
 
             // DrawText(TextFormat("(%d, %d)", i, j), getGridScreenX(j), getGridScreenY(i), 10, RED);
@@ -46,8 +46,9 @@ void resetGrid(GameGrid *grid)
 
 
 
-void removeFilledRows(GameGrid *grid)
-{
+int removeFilledRows(GameGrid *grid)
+{   
+    int filled_lines = 0;
     for (int i = ROWS - 1; i >= 0; i--)
     {
         int all_fill = 1;
@@ -62,7 +63,7 @@ void removeFilledRows(GameGrid *grid)
 
         if (all_fill)
         {
-
+            filled_lines++;
             for (int k = i; k > 0; k--)
             {
                 for (int j = 0; j < COLS; j++)
@@ -77,6 +78,8 @@ void removeFilledRows(GameGrid *grid)
             i++;
         }
     }
+
+    return filled_lines;
 }
 
 

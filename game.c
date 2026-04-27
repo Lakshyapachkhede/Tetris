@@ -1,28 +1,33 @@
 #include "game.h"
 #include "grid.h"
+#include <stdio.h>
 
 
 
 void initGame(Game *game)
 {
-        // full game grid
 
     resetGrid(&game->grid);
-
-
     initBag(&game->pb);
-
-
     initQueue(&game->queue, &game->pb);
-
     resetBlock(&game->block, &game->queue, &game->pb);
 
     game->down_timer = 0;
     game->time = 0;
+    game->font = LoadFont("./assets/fonts/font.ttf");
+
+    game->score = 0;
+    game->level = 0;
+    game->lines_cleared = 0;
+
+    game->state = GAME_RUN;
+
+
 }
 
 void gameLoop(Game *game)
 {
+    game->state = GAME_RUN;
     while (!WindowShouldClose())
     {
 
@@ -34,18 +39,186 @@ void gameLoop(Game *game)
         }
 
         BeginDrawing();
-        ClearBackground(BG_COLOR);
 
-        drawBlock(&game->block);
+        if(game->state == GAME_RUN)
+        {
+            ClearBackground(BG_COLOR);
 
-        drawGrid(&game->grid);
+            drawBlockOnGrid(&game->block);
 
-        drawGhostBlock(&game->block, &game->grid);
+            drawGrid(&game->grid);
+
+            drawGhostBlock(&game->block, &game->grid);
+
+            drawHUDLeft(game);
+
+            drawHUDRight(game);
+
+
+
+        }
+        else if(game->state == GAME_OVER)
+        {
+            drawGameOver(game);
+        }
+
+
+        
+        
+ 
+            
 
         EndDrawing();
     }
 }
 
+void drawGameOver(Game *game)
+{
+    char *text = "Game Over!";
+
+    Vector2 text_size = MeasureTextEx(
+        game->font,
+        text,
+        GAME_OVER_FONT_SIZE,
+        HUD_FONT_SPACE
+    );
+
+    DrawTextEx(
+        game->font,
+        text,
+        (Vector2){(WIDTH - text_size.x) / 2, (HEIGHT - text_size.y)/2},
+        GAME_OVER_FONT_SIZE,      
+        HUD_FONT_SPACE,       
+        RED
+    );
+
+}
+
+
+void drawHUDLeft(Game *game)
+{   
+    char *text = "Next Blocks";
+
+    Vector2 text_size = MeasureTextEx(
+        game->font,
+        text,
+        HUD_FONT_SIZE,
+        HUD_FONT_SPACE
+    );
+
+    DrawTextEx(
+        game->font,
+        text,
+        (Vector2){(CELL_START_X - text_size.x) / 2, HUD_TEXT_PAD_Y},
+        HUD_FONT_SIZE,      
+        HUD_FONT_SPACE,       
+        HUD_FONT_COLOR
+    );
+
+    for (int i = 0; i < NEXT_BLOCKS_TO_SHOW; i++)
+    {
+        Block block;
+        block.type = game->queue.data[i];
+        block.rotation = R_UP;
+        block.mat = TETROMINOES[block.type][block.rotation];
+
+        int x = (CELL_START_X - CELL_SIZE * BLOCK_MATRIX_SIZE) / 2;
+        int text_y_offset = text_size.y + HUD_TEXT_PAD_Y * 2;
+        int y = CELL_SIZE * BLOCK_MATRIX_SIZE * i + text_y_offset;
+
+        drawBlock(&block, x, y);
+    }
+}
+
+
+void drawHUDRight(Game *game)
+{   
+
+    int startX = (CELL_START_X + COLS * CELL_SIZE);
+    int right_width = WIDTH - startX;
+
+    char buffer[64];
+    char *score_text = "Score: ";
+    snprintf(buffer, sizeof(buffer), "%s%d", score_text, game->score);
+
+    int num_texts = 0;
+
+    Vector2 text_size = MeasureTextEx(
+        game->font,
+        buffer,
+        HUD_FONT_SIZE,
+        HUD_FONT_SPACE
+    );
+
+    num_texts++;
+    DrawTextEx(
+        game->font,
+        buffer,
+        (Vector2){startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts},
+        HUD_FONT_SIZE,      
+        HUD_FONT_SPACE,       
+        HUD_FONT_COLOR
+    );
+    
+    char *level_text = "Level: ";
+    snprintf(buffer, sizeof(buffer), "%s%d", level_text, game->level);
+
+    text_size = MeasureTextEx(
+        game->font,
+        buffer,
+        HUD_FONT_SIZE,
+        HUD_FONT_SPACE
+    );
+
+    num_texts++;
+    DrawTextEx(
+        game->font,
+        buffer,
+        (Vector2){startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts},
+        HUD_FONT_SIZE,      
+        HUD_FONT_SPACE,       
+        HUD_FONT_COLOR
+    );
+
+    char *lines_text = "Lines: ";
+    snprintf(buffer, sizeof(buffer), "%s%d", lines_text, game->lines_cleared);
+
+    text_size = MeasureTextEx(
+        game->font,
+        buffer,
+        HUD_FONT_SIZE,
+        HUD_FONT_SPACE
+    );
+
+    num_texts++;
+    DrawTextEx(
+        game->font,
+        buffer,
+        (Vector2){startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts},
+        HUD_FONT_SIZE,      
+        HUD_FONT_SPACE,       
+        HUD_FONT_COLOR
+    );
+    
+    
+}
+
+int getScore(Game *game, int lines_cleared)
+{
+    int base;
+
+    switch (lines_cleared)
+    {
+        case 1: base = 100; break;
+        case 2: base = 300; break;
+        case 3: base = 500; break;
+        case 4: base = 800; break;
+        default: base = 0; break;
+
+    }
+
+    return base * (game->level + 1);
+}
 
 int moveBlockDown(Game *game)
 {
@@ -59,8 +232,18 @@ int moveBlockDown(Game *game)
     else
     {
         addtoGrid(&game->block, &game->grid);
-        removeFilledRows(&game->grid);
+
+        int lines_cleared = removeFilledRows(&game->grid);
+
+        game->lines_cleared += lines_cleared;
+        game->level = game->lines_cleared / 10;
+        game->score += getScore(game, lines_cleared);
+
         resetBlock(&game->block, &game->queue, &game->pb);
+
+        if(!isValidPosition(&game->block, &game->grid))
+            game->state = GAME_OVER;
+
         return 0;
     }
 }
