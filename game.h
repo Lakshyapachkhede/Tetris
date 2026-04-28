@@ -38,6 +38,12 @@ typedef struct
 
     ScoreList score_list;
 
+    int showGhostBlock;
+
+    int blinkTextTime;
+    int isBlinking;
+
+
 }Game;
 
 
@@ -55,5 +61,6 @@ void showControls(Game *game);
 void handleInputGame(Game *game);
 void drawPause(Game *game);
 void drawGame(Game *game);
+void quitGame(Game *game);
 
 #endif // GAME_H

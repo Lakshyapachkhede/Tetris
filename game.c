@@ -5,7 +5,6 @@
 
 void changeState(Game *game, GameState new)
 {
-    printf("state changed to %d\n", new);
     game->state = new;
 }
 
@@ -33,6 +32,12 @@ void initGame(Game *game)
     game->showGrid = 1;
 
     initScoreList(&game->score_list);
+    game->highscore = getHighScore(&game->score_list);
+
+    game->showGhostBlock = 1;
+
+    game->isBlinking = 0;
+
 
 }
 
@@ -76,10 +81,11 @@ void gameLoop(Game *game)
             drawPause(game);
         }
 
-
-
         EndDrawing();
     }
+    
+    quitGame(game);
+
 }
 
 void drawGame(Game *game)
@@ -88,7 +94,9 @@ void drawGame(Game *game)
 
     drawBoard(&game->grid, game->showGrid);
 
-    drawGhostBlock(&game->block, &game->grid);
+    if(game->showGhostBlock)
+        drawGhostBlock(&game->block, &game->grid);
+
 
     drawHUDLeft(game);
 
@@ -155,24 +163,27 @@ void drawPause(Game *game)
 
 void showControls(Game *game)
 {
-    char controls_text[256];
+    char controls_text[512]; 
     snprintf(controls_text, sizeof(controls_text),
     "Controls\n"
-    "Rotate      -> up\n"
-    "Move        -> arrow keys\n"
-    "Drop        -> left ctrl \n"
-    "Full Screen -> F11\n"
-    "Restart     -> R\n"
-    "Quit        -> Esc\n"
-    "Pause       -> P\n"  
-    "%s Grid   -> G\n"
-    "Highscore   -> %d\n"
+    "Rotate         -> Up Arrow/X\n"
+    "Left / Right   -> Arrow Keys\n"
+    "Soft Drop      -> Down Arrow\n"
+    "Hard Drop      -> Ctrl/Space \n"
+    "Pause          -> P\n"
+    "Restart        -> R\n"
+    "Quit           -> Esc\n"
+    "Full Screen    -> F11\n"
+    "%s Grid      -> G\n"
+    "%s GhostBlock-> B\n"
+    "Highscore      -> %d\n"
     "\n\n"
-    "Back        -> C\n"
-    , game->showGrid ? "Hide" : "Show"
-    ,game->highscore
-);
-    
+    "Back -> C\n",
+    game->showGrid ? "Hide" : "Show",
+    game->showGhostBlock ? "Hide" : "Show",
+    game->highscore
+    );
+
     Vector2 text_size = getHUDTextSize(game, controls_text);
     showText(game, controls_text, (WIDTH - text_size.x)/2, (HEIGHT - text_size.y)/2);
 }
@@ -213,10 +224,8 @@ void drawHUDRight(Game *game)
     int startX = (CELL_START_X + COLS * CELL_SIZE);
     int right_width = WIDTH - startX;
     
-
     char buffer[64];
     int num_texts = 0;
-
 
     char *score_text = "Score: ";
     snprintf(buffer, sizeof(buffer), "%s%d", score_text, game->score);
@@ -224,15 +233,11 @@ void drawHUDRight(Game *game)
     num_texts++;
     showText(game, buffer, startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts);
 
-
-    
     char *level_text = "Level: ";
     snprintf(buffer, sizeof(buffer), "%s%d", level_text, game->level);
     text_size = getHUDTextSize(game, buffer);
     num_texts++;
     showText(game, buffer, startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts);
-
-
 
     char *lines_text = "Lines: ";
     snprintf(buffer, sizeof(buffer), "%s%d", lines_text, game->lines_cleared);
@@ -240,12 +245,18 @@ void drawHUDRight(Game *game)
     num_texts++;
     showText(game, buffer, startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts);
 
-
-
     char *control_text = "Controls: C";
     text_size = getHUDTextSize(game, control_text);
     num_texts++;
     showText(game, control_text, startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts);
+
+    char *highscore_text = "Best: ";
+    snprintf(buffer, sizeof(buffer), "%s%d", highscore_text, game->highscore);
+
+    text_size = getHUDTextSize(game, buffer);
+    num_texts++;
+    showText(game, buffer, startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts);
+
 
 }
 
@@ -349,13 +360,13 @@ void handleInputGame(Game *game)
     {
         moveBlockDown(game);
     }
-    if (IsKeyPressed(KEY_RIGHT_CONTROL))
+    if (IsKeyPressed(KEY_RIGHT_CONTROL) || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_LEFT_CONTROL))
     {
         while (moveBlockDown(game))
             ;
     }
 
-    if (IsKeyPressed(KEY_UP))
+    if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_X))
     {
         RotationId oldRot = game->block.rotation;
         int oldX = game->block.x;
@@ -387,9 +398,8 @@ void handleInputGame(Game *game)
         }
     }
 
-
-
 }
+
 
 
 void handleInput(Game *game)
@@ -397,6 +407,7 @@ void handleInput(Game *game)
 
     if (IsKeyPressed(KEY_R))
     {
+        addScore(&game->score_list, game->score);
         initGame(game);
 
     }
@@ -450,9 +461,18 @@ void handleInput(Game *game)
         game->showGrid = !game->showGrid;
     }
 
+    if (IsKeyPressed(KEY_B))
+    {
+        game->showGhostBlock = !game->showGhostBlock;
+    }
+ 
 
-    
+}
 
+void quitGame(Game *game)
+{
+    addScore(&game->score_list, game->score); // saves score when game closes
+    closeScoreList(&game->score_list);
 }
 
 

@@ -60,15 +60,25 @@ uint32_t getHighScore(ScoreList *list)
     return list->list[0].score;
 }
 
-void addScore(ScoreList *list, uint32_t score)
+int addScore(ScoreList *list, uint32_t score)
 {
+
+    if(score <= list->list[MAX_SCORES-1].score)
+    {
+        return 0;
+    }
+
     char buffer[11];
-    getCurrentDate(&buffer, sizeof(buffer));
+    getCurrentDate(buffer, sizeof(buffer));
 
     list->list[MAX_SCORES-1].score = score;
     strncpy(list->list[MAX_SCORES-1].date, buffer, sizeof(buffer));
 
     sortScoreList(list);
+    saveScoreList(list);
+
+
+    return 1;
 
 }
 

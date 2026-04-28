@@ -88,4 +88,6 @@ typedef enum GameState {GAME_RUN, GAME_OVER, CONTROLS, HIGHSCORE, PAUSE} GameSta
 
 #define SETTING_FILE "./data/setting.txt"
 
+#define BLINK_TIME 2000
+
 #endif // SETTINGS_H

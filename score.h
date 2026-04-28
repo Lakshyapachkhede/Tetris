@@ -2,6 +2,7 @@
 #define SCORE_H
 #include <stdint.h>
 #include "settings.h"
+#include <stdio.h>
 
 typedef struct Score
 {
@@ -21,7 +22,7 @@ void initScoreList(ScoreList *list);
 
 uint32_t getHighScore(ScoreList *list);
 
-void addScore(ScoreList *list, uint32_t score);
+int addScore(ScoreList *list, uint32_t score);
 
 void sortScoreList(ScoreList *list);
 
