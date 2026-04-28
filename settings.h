@@ -74,10 +74,10 @@ extern int kicks[6][2];
 #define HUD_FONT_SIZE 16
 #define HUD_FONT_SPACE 1
 #define HUD_TEXT_PAD_Y 40
-#define GAME_OVER_FONT_SIZE 40
+#define FONT_SIZE_LARGE 40
 
 
-typedef enum GameState {GAME_RUN, GAME_OVER, CONTROLS, HIGHSCORE} GameState;
+typedef enum GameState {GAME_RUN, GAME_OVER, CONTROLS, HIGHSCORE, PAUSE} GameState;
 
 
 #define MAX_SCORES 10

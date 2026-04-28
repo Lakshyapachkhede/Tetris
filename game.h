@@ -44,5 +44,7 @@ int getScore(Game *game, int lines_cleared);
 void drawGameOver(Game *game);
 void showControls(Game *game);
 void handleInputGame(Game *game);
+void drawPause(Game *game);
+void drawGame(Game *game);
 
 #endif // GAME_H

@@ -42,12 +42,12 @@ void gameLoop(Game *game)
 
         BeginDrawing();
         
+        ClearBackground(BG_COLOR);
+
+        drawGame(game);
         
         if(game->state == GAME_RUN)
         {
-            ClearBackground(BG_COLOR);
-
-
             handleInputGame(game);
 
             if(blockTimer(game))
@@ -55,31 +55,10 @@ void gameLoop(Game *game)
                 moveBlockDown(game);
             }
 
-
-            drawBlockOnGrid(&game->block);
-
-            drawGrid(&game->grid);
-
-            drawGhostBlock(&game->block, &game->grid);
-
-            drawHUDLeft(game);
-
-            drawHUDRight(game);
-
         }
 
         else if(game->state == GAME_OVER)
         {
-            ClearBackground(BG_COLOR);
-
-            drawBlockOnGrid(&game->block);
-
-            drawGrid(&game->grid);
-
-            drawHUDLeft(game);
-
-            drawHUDRight(game);
-            
             drawGameOver(game);
         }
 
@@ -88,20 +67,37 @@ void gameLoop(Game *game)
             showControls(game);
         }
 
+        else if(game->state == PAUSE)
+        {
+            drawPause(game);
+        }
+
 
 
         EndDrawing();
     }
 }
 
-void drawGameOver(Game *game)
+void drawGame(Game *game)
 {
-    char *text = "Game Over!";
+    drawBlockOnGrid(&game->block);
 
+    drawGrid(&game->grid);
+
+    drawGhostBlock(&game->block, &game->grid);
+
+    drawHUDLeft(game);
+
+    drawHUDRight(game);
+
+}
+
+void drawTextCenterLarge(Game*game, const char *text, Color color)
+{
     Vector2 text_size = MeasureTextEx(
         game->font,
         text,
-        GAME_OVER_FONT_SIZE,
+        FONT_SIZE_LARGE,
         HUD_FONT_SPACE
     );
 
@@ -109,40 +105,66 @@ void drawGameOver(Game *game)
         game->font,
         text,
         (Vector2){(WIDTH - text_size.x) / 2, (HEIGHT - text_size.y)/2},
-        GAME_OVER_FONT_SIZE,      
+        FONT_SIZE_LARGE,      
         HUD_FONT_SPACE,       
-        RED
+        color
     );
 
 }
 
-void showControls(Game *game)
+Vector2 getHUDTextSize(Game *game, const char*text)
 {
-    char * controls_text = "Controls\n"
-    "rotate      -> up\n"
-    "move        -> arrow keys\n"
-    "drop        -> left ctrl \n"
-    "full screen -> F11\n"
-    "restart     -> R"
-    ;
-    
-
-    Vector2 text_size = MeasureTextEx(
+    return MeasureTextEx(
         game->font,
-        controls_text,
-        25,
+        text,
+        HUD_FONT_SIZE,
         HUD_FONT_SPACE
     );
+}
 
+void showText(Game*game, const char *text, int x, int y)
+{
     DrawTextEx(
         game->font,
-        controls_text,
-        (Vector2){(WIDTH -  text_size.x)/2, (HEIGHT - text_size.y) / 2},
-        25,      
+        text,
+        (Vector2){x, y},
+        HUD_FONT_SIZE,      
         HUD_FONT_SPACE,       
         HUD_FONT_COLOR
     );
+
+}
+
+
+void drawGameOver(Game *game)
+{
+    char *text = "Game Over!";
+    drawTextCenterLarge(game, text, RED);
+}
+
+void drawPause(Game *game)
+{
+    char *text = "Pause";
+    drawTextCenterLarge(game, text, WHITE);
+}
+
+
+void showControls(Game *game)
+{
+    char * controls_text = "Controls\n"
+    "Rotate      -> up\n"
+    "Move        -> arrow keys\n"
+    "Drop        -> left ctrl \n"
+    "Full Screen -> F11\n"
+    "Restart     -> R\n"
+    "Quit        -> Esc\n"
+    "Pause       -> P\n"
+    "Back        -> C\n"
+    ;
     
+
+    Vector2 text_size = getHUDTextSize(game, controls_text);
+    showText(game, controls_text, (WIDTH - text_size.x)/2, (HEIGHT - text_size.y)/2);
 }
 
 
@@ -150,20 +172,13 @@ void drawHUDLeft(Game *game)
 {   
     char *text = "Next Blocks";
 
-    Vector2 text_size = MeasureTextEx(
-        game->font,
-        text,
-        HUD_FONT_SIZE,
-        HUD_FONT_SPACE
-    );
+    Vector2 text_size = getHUDTextSize(game, text);
 
-    DrawTextEx(
-        game->font,
+    showText(
+        game,
         text,
-        (Vector2){(CELL_START_X - text_size.x) / 2, HUD_TEXT_PAD_Y},
-        HUD_FONT_SIZE,      
-        HUD_FONT_SPACE,       
-        HUD_FONT_COLOR
+       (CELL_START_X - text_size.x) / 2,
+        HUD_TEXT_PAD_Y
     );
 
     for (int i = 0; i < NEXT_BLOCKS_TO_SHOW; i++)
@@ -187,70 +202,41 @@ void drawHUDRight(Game *game)
 
     int startX = (CELL_START_X + COLS * CELL_SIZE);
     int right_width = WIDTH - startX;
+    
 
     char buffer[64];
-    char *score_text = "Score: ";
-    snprintf(buffer, sizeof(buffer), "%s%d", score_text, game->score);
-
     int num_texts = 0;
 
-    Vector2 text_size = MeasureTextEx(
-        game->font,
-        buffer,
-        HUD_FONT_SIZE,
-        HUD_FONT_SPACE
-    );
 
+    char *score_text = "Score: ";
+    snprintf(buffer, sizeof(buffer), "%s%d", score_text, game->score);
+    Vector2 text_size = getHUDTextSize(game, buffer);
     num_texts++;
-    DrawTextEx(
-        game->font,
-        buffer,
-        (Vector2){startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts},
-        HUD_FONT_SIZE,      
-        HUD_FONT_SPACE,       
-        HUD_FONT_COLOR
-    );
+    showText(game, buffer, startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts);
+
+
     
     char *level_text = "Level: ";
     snprintf(buffer, sizeof(buffer), "%s%d", level_text, game->level);
-
-    text_size = MeasureTextEx(
-        game->font,
-        buffer,
-        HUD_FONT_SIZE,
-        HUD_FONT_SPACE
-    );
-
+    text_size = getHUDTextSize(game, buffer);
     num_texts++;
-    DrawTextEx(
-        game->font,
-        buffer,
-        (Vector2){startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts},
-        HUD_FONT_SIZE,      
-        HUD_FONT_SPACE,       
-        HUD_FONT_COLOR
-    );
+    showText(game, buffer, startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts);
+
+
 
     char *lines_text = "Lines: ";
     snprintf(buffer, sizeof(buffer), "%s%d", lines_text, game->lines_cleared);
-
-    text_size = MeasureTextEx(
-        game->font,
-        buffer,
-        HUD_FONT_SIZE,
-        HUD_FONT_SPACE
-    );
-
+    text_size = getHUDTextSize(game, buffer);
     num_texts++;
-    DrawTextEx(
-        game->font,
-        buffer,
-        (Vector2){startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts},
-        HUD_FONT_SIZE,      
-        HUD_FONT_SPACE,       
-        HUD_FONT_COLOR
-    );
-    
+    showText(game, buffer, startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts);
+
+
+
+    char *control_text = "Controls: C";
+    text_size = getHUDTextSize(game, control_text);
+    num_texts++;
+    showText(game, control_text, startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts);
+
 }
 
 int getScore(Game *game, int lines_cleared)
@@ -405,10 +391,22 @@ void handleInput(Game *game)
 
     }
 
+    if (IsKeyPressed(KEY_P))
+    {   
+        if(game->state == GAME_OVER)
+            ;
+        else if(game->state == PAUSE)
+            changeState(game, GAME_RUN);
+        else       
+            changeState(game, PAUSE);
+    }
+
 
     if (IsKeyPressed(KEY_C))
     {   
-        if(game->state == CONTROLS)
+        if(game->state == GAME_OVER)
+            ;
+        else if(game->state == CONTROLS)
             changeState(game, GAME_RUN);
         else       
             changeState(game, CONTROLS);
