@@ -12,7 +12,7 @@ typedef struct Block Block;
 
 int removeFilledRows(GameGrid *grid);
 void resetGrid(GameGrid *grid);
-void drawGrid(GameGrid *grid);
+void drawBoard(GameGrid *grid, int showGrid);
 int getGridScreenY(int i);
 int getGridScreenX(int j);
 int isValidPosition(Block *block, GameGrid *grid);

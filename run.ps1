@@ -1,11 +1,9 @@
-$debug = $false
+$debug = $true
 
 # Define directories and file names
 $sourceDir = ".\"  # Directory containing source files
 $outputDir = "."  # Output directory for the compiled executable
 $outputFile = "Tetris.exe"  # Output executable name
-
-
 
 
 

@@ -68,6 +68,7 @@ extern int kicks[6][2];
 
 #define NEXT_BLOCKS_TO_SHOW 3
 
+#define FONT_PATH "./assets/fonts/font.ttf"
 
 
 #define HUD_FONT_COLOR WHITE
@@ -81,6 +82,10 @@ typedef enum GameState {GAME_RUN, GAME_OVER, CONTROLS, HIGHSCORE, PAUSE} GameSta
 
 
 #define MAX_SCORES 10
-#define SCORES_FILE "scores.txt"
+#define SCORES_FILE "./data/score.txt"
+
+
+
+#define SETTING_FILE "./data/setting.txt"
 
 #endif // SETTINGS_H

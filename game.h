@@ -6,7 +6,7 @@
 #include "queue.h"
 #include "block.h"
 #include <stdint.h>
-
+#include "score.h"
 
 typedef struct 
 {
@@ -32,7 +32,16 @@ typedef struct
 
     int isFullScreen;
 
+    int showGrid;
+
+    uint32_t highscore;
+
+    ScoreList score_list;
+
 }Game;
+
+
+
 void initGame(Game *game);
 void gameLoop(Game *game);
 void handleInput(Game *game);

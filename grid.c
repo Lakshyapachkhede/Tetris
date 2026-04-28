@@ -11,20 +11,32 @@ int getGridScreenY(int i)
 }
 
 
-void drawGrid(GameGrid *grid)
+void drawBoard(GameGrid *grid, int showGrid)
 {
+    Rectangle rect_border = {CELL_START_X, CELL_START_Y, CELL_SIZE * COLS, CELL_SIZE * ROWS};
+
+    DrawRectangleLinesEx(rect_border, 1, GRID_COLOR);
+
+
     for (int i = 0; i < ROWS; i++)
     {
         for (int j = 0; j < COLS; j++)
         {
             Rectangle rect = {getGridScreenX(j), getGridScreenY(i), CELL_SIZE, CELL_SIZE};
 
+            
             if (grid->cells[i][j] != EMPTY)
             {
-                DrawRectangleRec(rect, g_colors[grid->cells[i][j]]);
+                DrawRectangleRec(rect, g_colors[grid->cells[i][j]]); 
+                DrawRectangleLinesEx(rect, 1, GRID_COLOR);
             }
             
-            DrawRectangleLinesEx(rect, 1, GRID_COLOR);
+            if(showGrid)
+            {
+                DrawRectangleLinesEx(rect, 1, GRID_COLOR);
+            }
+      
+            
 
             // DrawText(TextFormat("(%d, %d)", i, j), getGridScreenX(j), getGridScreenY(i), 10, RED);
         }

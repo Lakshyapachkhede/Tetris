@@ -20,7 +20,7 @@ void initGame(Game *game)
 
     game->down_timer = 0;
     game->time = 0;
-    game->font = LoadFont("./assets/fonts/font.ttf");
+    game->font = LoadFont(FONT_PATH);
 
     game->score = 0;
     game->level = 0;
@@ -29,6 +29,10 @@ void initGame(Game *game)
     changeState(game, GAME_RUN);
 
     game->isFullScreen = 0;
+
+    game->showGrid = 1;
+
+    initScoreList(&game->score_list);
 
 }
 
@@ -80,9 +84,9 @@ void gameLoop(Game *game)
 
 void drawGame(Game *game)
 {
-    drawBlockOnGrid(&game->block);
+    drawBlock(&game->block, getGridScreenX(game->block.x), getGridScreenY(game->block.y));
 
-    drawGrid(&game->grid);
+    drawBoard(&game->grid, game->showGrid);
 
     drawGhostBlock(&game->block, &game->grid);
 
@@ -151,18 +155,24 @@ void drawPause(Game *game)
 
 void showControls(Game *game)
 {
-    char * controls_text = "Controls\n"
+    char controls_text[256];
+    snprintf(controls_text, sizeof(controls_text),
+    "Controls\n"
     "Rotate      -> up\n"
     "Move        -> arrow keys\n"
     "Drop        -> left ctrl \n"
     "Full Screen -> F11\n"
     "Restart     -> R\n"
     "Quit        -> Esc\n"
-    "Pause       -> P\n"
+    "Pause       -> P\n"  
+    "%s Grid   -> G\n"
+    "Highscore   -> %d\n"
+    "\n\n"
     "Back        -> C\n"
-    ;
+    , game->showGrid ? "Hide" : "Show"
+    ,game->highscore
+);
     
-
     Vector2 text_size = getHUDTextSize(game, controls_text);
     showText(game, controls_text, (WIDTH - text_size.x)/2, (HEIGHT - text_size.y)/2);
 }
@@ -434,6 +444,12 @@ void handleInput(Game *game)
         }
 
     }
+
+    if (IsKeyPressed(KEY_G))
+    {
+        game->showGrid = !game->showGrid;
+    }
+
 
     
 
