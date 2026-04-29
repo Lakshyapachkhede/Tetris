@@ -1,0 +1,2 @@
+blinking text for highscore , single, double , tetris
+animated line clearing

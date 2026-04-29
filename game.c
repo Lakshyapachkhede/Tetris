@@ -38,6 +38,8 @@ void initGame(Game *game)
 
     game->isBlinking = 0;
 
+    game->score_saved = 0;
+
 
 }
 
@@ -81,6 +83,11 @@ void gameLoop(Game *game)
             drawPause(game);
         }
 
+        else if(game->state == HIGHSCORE)
+        {
+            drawHighscoreList(game);
+        }
+
         EndDrawing();
     }
     
@@ -104,6 +111,26 @@ void drawGame(Game *game)
 
 }
 
+void drawHighscoreList(Game *game)
+{
+    DrawRectangle(0, 0, WIDTH, HEIGHT, BG_COLOR);
+    char buffer[1024];
+    int offset = 0;
+
+    offset += snprintf(buffer + offset, 1024 - offset, "Highscores:\n");
+    for (int i = 0; i < game->score_list.count; i++)
+    {
+        Score s = game->score_list.list[i];
+        offset += snprintf(buffer + offset, 1024 - offset, "%-10u %10s\n", s.score, s.date);
+    }
+
+    Vector2 text_size = getHUDTextSize(game, buffer);
+    showText(game, buffer, (WIDTH - text_size.x)/2, (HEIGHT - text_size.y)/2);
+    
+
+}
+
+
 void drawTextCenterLarge(Game*game, const char *text, Color color)
 {
     Vector2 text_size = MeasureTextEx(
@@ -121,6 +148,9 @@ void drawTextCenterLarge(Game*game, const char *text, Color color)
         HUD_FONT_SPACE,       
         color
     );
+
+
+
 
 }
 
@@ -255,7 +285,7 @@ void drawHUDRight(Game *game)
 
     text_size = getHUDTextSize(game, buffer);
     num_texts++;
-    showText(game, buffer, startX + (right_width - text_size.x) / 2, HUD_TEXT_PAD_Y * num_texts);
+    showText(game, buffer, startX + (right_width - text_size.x) / 2, HEIGHT - text_size.y - HUD_TEXT_PAD_Y);
 
 
 }
@@ -307,6 +337,7 @@ int moveBlockDown(Game *game)
 
         if(!isValidPosition(&game->block, &game->grid))
         {   
+            saveScore(game);
             changeState(game, GAME_OVER);
         }
 
@@ -400,14 +431,22 @@ void handleInputGame(Game *game)
 
 }
 
-
+void saveScore(Game *game)
+{   
+    if(!game->score_saved)
+    {
+        game->score_saved = 1;
+        addScore(&game->score_list, game->score);
+    }
+}
 
 void handleInput(Game *game)
 {
 
     if (IsKeyPressed(KEY_R))
     {
-        addScore(&game->score_list, game->score);
+        saveScore(game);
+
         initGame(game);
 
     }
@@ -432,6 +471,19 @@ void handleInput(Game *game)
         else       
             changeState(game, CONTROLS);
     }
+
+    if (IsKeyPressed(KEY_H))
+    {   
+        if(game->state == GAME_OVER)
+            ;
+        else if(game->state == HIGHSCORE)
+            changeState(game, GAME_RUN);
+        else       
+            changeState(game, HIGHSCORE);
+    }
+
+
+
 
     if (IsKeyPressed(KEY_F11))
     {   
@@ -465,13 +517,15 @@ void handleInput(Game *game)
     {
         game->showGhostBlock = !game->showGhostBlock;
     }
+
+
  
 
 }
 
 void quitGame(Game *game)
 {
-    addScore(&game->score_list, game->score); // saves score when game closes
+    saveScore(game); // saves score when game closes
     closeScoreList(&game->score_list);
 }
 

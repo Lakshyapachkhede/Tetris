@@ -1,4 +1,4 @@
-$debug = $true
+$debug = $false
 
 # Define directories and file names
 $sourceDir = ".\"  # Directory containing source files
