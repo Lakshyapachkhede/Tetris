@@ -124,6 +124,9 @@ void drawHighscoreList(Game *game)
         offset += snprintf(buffer + offset, 1024 - offset, "%-10u %10s\n", s.score, s.date);
     }
 
+    offset += snprintf(buffer + offset, 1024 - offset, "\n\nBack -> H\n");
+
+
     Vector2 text_size = getHUDTextSize(game, buffer);
     showText(game, buffer, (WIDTH - text_size.x)/2, (HEIGHT - text_size.y)/2);
     
@@ -206,12 +209,11 @@ void showControls(Game *game)
     "Full Screen    -> F11\n"
     "%s Grid      -> G\n"
     "%s GhostBlock-> B\n"
-    "Highscore      -> %d\n"
+    "Highscore      -> H\n"
     "\n\n"
     "Back -> C\n",
     game->showGrid ? "Hide" : "Show",
-    game->showGhostBlock ? "Hide" : "Show",
-    game->highscore
+    game->showGhostBlock ? "Hide" : "Show"
     );
 
     Vector2 text_size = getHUDTextSize(game, controls_text);
@@ -408,7 +410,7 @@ void handleInputGame(Game *game)
 
         int success = 0;
 
-        for (int k = 0; k < sizeof(kicks) / sizeof(kicks[0]); k++)
+        for (unsigned int k = 0; k < sizeof(kicks) / sizeof(kicks[0]); k++)
         {
             game->block.x = oldX + kicks[k][0];
             game->block.y = oldY + kicks[k][1];
